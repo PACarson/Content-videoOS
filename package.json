@@ -1,0 +1,14 @@
+{
+  "name": "content-video-os-phase1",
+  "version": "0.1.0-slice1",
+  "private": true,
+  "description": "Content Video OS — Phase 1 vertical slice implementation. Slice 1 scope only: Idea -> Concept -> Script, to READY.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
