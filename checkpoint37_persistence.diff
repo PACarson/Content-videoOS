@@ -1,0 +1,25 @@
+--- a/35_ContentVideoOS_Slice6_Human_Decision_Worksheet.md (before checkpoint-37 persistence)
++++ b/35_ContentVideoOS_Slice6_Human_Decision_Worksheet.md (after checkpoint-37 persistence)
+@@ -4,0 +5,2 @@
++> **STATUS UPDATE (2026-10-16) — added after this worksheet was prepared; the "does not decide anything" statement above describes the document as originally prepared.** This worksheet now also holds the human owner's recorded answers. **DECIDED:** OD-R7 (R7-C), OD-R8 (R8-B modified), OD-R9 (R9-A), OD-R10 (R10-A). **STILL OPEN (blank below):** OD-R11, OD-R12, OD-R2, OD-R1, OD-R3, OD-R4, OD-R5, OD-R6. A read-only decision analysis for OD-R11 exists in `37_ContentVideoOS_Slice6_Session_Handoff_Checkpoint.md` (Appendix A); its recommendation is a proposal only and is **not** a decision. The "Required Status" block at the end of this file likewise describes the worksheet as originally prepared. Current state of record: `37_ContentVideoOS_Slice6_Session_Handoff_Checkpoint.md` and `CVOS_Slice6_Implementation_Contract_v1.md` §17. Slice 6 implementation remains NOT AUTHORIZED.
++
+@@ -856,0 +859,2 @@
++
++*(Status as originally prepared — superseded by the STATUS UPDATE at the top of this file. The current state of record is in `37_ContentVideoOS_Slice6_Session_Handoff_Checkpoint.md` and `CVOS_Slice6_Implementation_Contract_v1.md` §17.)*
+--- a/CVOS_Slice6_Implementation_Contract_v1.md (before checkpoint-37 persistence)
++++ b/CVOS_Slice6_Implementation_Contract_v1.md (after checkpoint-37 persistence)
+@@ -432 +432,13 @@
+-None of GG-01, GG-02, or GG-03 is silently fixed by this Contract. No ADR, Architecture document, or AI Production Contract text is modified here.
++**GG-04** *(PENDING — PROPOSED gap entry, recorded 2026-10-16; discovered during the OD-R11 read-only analysis; not a decision)*
++
++Architecture §2 (Domain Model, line "EditVersion — 1:1 with each EditPlan version") and AI Production Contract §F (`plan_id`: "1:1, same version number") describe `EditVersion` as paired 1:1 with each `EditPlan` version, and Architecture §3 says a render failure "must not silently retry into a duplicate EditVersion". The Slice 5 implementation does not enforce this: `EditEngine.generateRoughCut` has no duplicate guard, and `612_editEngine.test.js` (lines 126–135) asserts that two calls on the same valid `EditPlan` produce two distinct `EditVersion` records with identical manifests. `31_`/`32_`/`33_`/`34_`/`35_` already treat "more than one `EditVersion` per `EditPlan`" as the premise of OD-R11 / OD-R6, and `32_` reads the 1:1 wording as "one row per `generateRoughCut` call".
++
++Status: **PENDING — NOT RESOLVED HERE.** Possible resolutions (clarify the governance text, enforce the pairing in a future change, or accept N-per-plan) are not selected; any of them is for the human owner. Relevant to OD-R11 and OD-R6.
++
++**GG-05** *(PENDING — PROPOSED gap entry, recorded 2026-10-16; discovered during the OD-R11 read-only analysis; not a decision)*
++
++`35_` section A5 states that, if implemented as a mutable re-assignable pointer, R11-C "would be the first mutable field introduced anywhere in the EditPlan/EditVersion/Review cluster", and calls this "a structural departure from every precedent set so far in this codebase". The first statement holds for that cluster; the second is broader than the code supports: `MediaAnalysisEngine.analyzeMedia` (`src/208_MediaAnalysisEngine.js:65-90` in `Content-videoOS-Canonical-Layered-Slice5.zip`) already appends a new immutable `MediaAnalysis` and then updates the mutable pointer `MediaAsset.latest_analysis_id`, as separate non-atomic writes, and `610_mediaAnalysisEngine.test.js` covers only failures that occur before the first write.
++
++Status: **DOCUMENTATION INCONSISTENCY — NOT RESOLVED HERE.** `35_` section A5 is not edited by this entry; the human owner should read the A5 statement together with this precedent when deciding OD-R11.
++
++None of GG-01 through GG-05 is silently fixed by this Contract. No ADR, Architecture document, or AI Production Contract text is modified here.

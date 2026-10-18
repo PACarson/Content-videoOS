@@ -2,6 +2,8 @@
 
 **Nature of this document:** DOCUMENT PREPARATION ONLY. This worksheet does not decide anything, does not rank options, and does not recommend an answer. It restates the 12 open decisions from `34_ContentVideoOS_Slice6_Contract_Decision_Gate.md` in a dependency-aware order, with blank fields for the human owner to record a selection and rationale. No code, test, ADR, Contract, or package file is modified by this document.
 
+> **STATUS UPDATE (2026-10-16) — added after this worksheet was prepared; the "does not decide anything" statement above describes the document as originally prepared.** This worksheet now also holds the human owner's recorded answers. **DECIDED:** OD-R7 (R7-C), OD-R8 (R8-B modified), OD-R9 (R9-A), OD-R10 (R10-A). **STILL OPEN (blank below):** OD-R11, OD-R12, OD-R2, OD-R1, OD-R3, OD-R4, OD-R5, OD-R6. A read-only decision analysis for OD-R11 exists in `37_ContentVideoOS_Slice6_Session_Handoff_Checkpoint.md` (Appendix A); its recommendation is a proposal only and is **not** a decision. The "Required Status" block at the end of this file likewise describes the worksheet as originally prepared. Current state of record: `37_ContentVideoOS_Slice6_Session_Handoff_Checkpoint.md` and `CVOS_Slice6_Implementation_Contract_v1.md` §17. Slice 6 implementation remains NOT AUTHORIZED.
+
 ---
 
 ## 0. Background — Locked Decisions (not reopened here)
@@ -225,16 +227,36 @@ R9-B would introduce a second persisted entity for the whole remaining lifetime 
 ### Human Decision
 
 Selected option:
-[ ]
+R9-A — Embedded Structured Findings Array — DECIDED
 
 Decision:
-[ ]
+Selected R9-A: Review contains an embedded structured "findings[]" array. The findings container is part of the immutable Review record for that review round. This avoids introducing a separate ReviewItem/Finding entity in Slice 6 while preserving structured per-element review information and an explicit future evolution path toward separate finding entities if later evidence justifies it.
+
+Scope of this decision (explicit boundary):
+R9-A decides only the container/ownership model of `findings[]`. It does **not** decide the internal field-level schema of `findings[]` entries. No finding-level field is selected, authorized, or implied by this decision — including any field that appears only as an illustrative example in the Option R9-A description above or in the Implementation Contract's §10. Every finding-level field remains OPEN and belongs to the Contract update / implementation design stage.
 
 Rationale:
-[ ]
+A. Consistency with A2 / R7-C / R8-B (modified). Already locked: D-A = A2 (one immutable Review record per review round); R7-C (audit-oriented Review record); R8-B (modified) (required custom reviewer identity). R9-A makes `Review` — with its embedded `findings[]` — a complete, immutable review-round snapshot, without introducing a new ReviewItem/Finding entity.
+
+B. Support for the per-element judgment in AI Production Contract §G. §G's aggregation rule operates over per-element review decisions: if every decision is `KEEP`, the flow continues (per §G the version moves to `FINAL_REVIEW`; how Slice 6 represents that outcome is OD-R12, not decided here, and Final Approval itself remains deferred per D-B = B2); otherwise the version moves to `REVISION_REQUESTED` and only the flagged elements are handed back to EditPlanEngine. A `Review` therefore must be able to hold structured per-element information. R9-C's aggregate-only model cannot fully carry this semantics; R9-A and R9-B both can. R9-A is selected because it does so without introducing an additional entity in Slice 6.
+
+C. Complexity matched to current need. R9-B's independent Finding entity could provide stronger cross-round querying and finding-level lifecycle, but at present: Slice 6 covers Rough Cut Review only; there is no actual Review usage evidence; there is no evidence that an independent Finding entity is required; and R9-A already suffices to retain structured per-element review information. Therefore R9-A is adopted for now. This is not a judgment against R9-B: R9-B remains a preserved future option if later evidence requires finding-level lifecycle, cross-round querying, or independent finding identity.
+
+（中文简述：选定 R9-A——Review 内嵌结构化 findings[] 数组，作为该轮不可变 Review 记录的一部分；本决定只确定「容器/归属模型」，findings[] 内部字段 schema 仍为 OPEN；R9-B 作为未来演进路径保留，并非被否定。）
+
+Preserved alternatives:
+R9-A, R9-B, R9-C and R9-D all remain recorded in full above, unchanged. Separate ReviewItem/Finding records remain a future evolution path; R9-B is not permanently prohibited.
 
 Dependencies / follow-up decisions:
-[ ]
+- Still OPEN and NOT decided by this entry: the internal field-level schema of `findings[]` entries (Contract update / implementation design stage); OD-R10 (review round identity mechanism); OD-R11; OD-R12; OD-R1 through OD-R6.
+- R7-C and R8-B (modified) are unchanged by this entry.
+- Two carried-forward constraints are recorded below. They are dependency / implementation constraints, not new decisions, and they do not reopen OD-R7 or OD-R8.
+
+Carried-forward constraint 1 — Reviewer identity semantics (relates to OD-R8, which remains DECIDED as R8-B modified):
+"reviewer" is an operator-supplied human-readable identifier, not an authenticated identity. It is required, non-null, non-empty, operator-supplied and not hardcoded; formal authentication is not required in Slice 6. This semantics is sufficient for Rough Cut Review but MUST NOT be interpreted as authenticated identity for future higher-authority gates such as Final Approval or Publication Authorization.
+
+Carried-forward constraint 2 — Revision-linkage timing (relates to OD-R7, which remains DECIDED as R7-C; depends on OD-R5, still OPEN):
+R7-C includes a revision-linkage field, but Review is immutable. The exact value/creation mechanism depends on OD-R5 (requestRevision orchestration semantics). Therefore: OD-R5 is not decided here; whether a Review may be updated after creation is not decided here; Review immutability must not be broken; the Slice 5 EditPlan schema must not be modified in order to populate the linkage; the linkage's creation semantics are to be resolved only after OD-R5 is decided. This is an OPEN dependency note, not a reopening of OD-R7.
 
 ---
 
@@ -286,16 +308,51 @@ Whichever mechanism is chosen becomes the sole way any future code (including a 
 ### Human Decision
 
 Selected option:
-[ ]
+R10-A — Explicit "review_round" Integer — DECIDED
 
 Decision:
-[ ]
+Selected R10-A: Each Review carries an explicit integer "review_round", scoped to its exact "edit_version_id". The round starts at 1 and is assigned by ReviewEngine during Review creation, not supplied by the caller. Review round identity is distinct from EditPlan version, EditVersion identity, and EditPlan-lineage revision counting. Uniqueness, continuity, allocation, and concurrency rules remain subject to explicit Contract definition. This decision does not determine the remaining Review schema or authorize implementation.
+
+（中文简述：选定 R10-A——每条 Review 携带显式整数 review_round，按其 edit_version_id 作用域计数，从 1 开始，由 ReviewEngine 在创建 Review 时分配、调用方不得指定；它与 EditPlan.version、EditVersion 身份、EditPlan lineage 的 revision 计数是不同概念。唯一性、连续性、分配与并发规则仍须在 Contract 中明确定义；本决定不确定 Review 其余 schema，也不授权实作。）
+
+Meaning of this decision (explicit boundary):
+
+Decided:
+- The field is the integer `review_round`; it counts the review rounds of one specific `EditVersion` and is scoped to the `Review`'s exact `edit_version_id`.
+- The first round for an `EditVersion` is round 1.
+- `ReviewEngine` assigns the round during `Review` creation; the caller does not supply it.
+- The round is a persisted business fact, not a value derived on the fly from `created_at`.
+- Four concepts stay distinct and must not be conflated: `review_round` (the round at which one `EditVersion` is being reviewed), `EditPlan.version` (EditPlan version identity and sequence), `EditVersion.id` (the identity of one specific `EditVersion`), and EditPlan-lineage revision counting (scope fixed by D-C = C1; counting unit still governed by the later OD-R2 decision).
+
+Remains OPEN — not decided by this entry and not to be supplied by inference; to be defined in the Contract update stage against the actual code and runtime boundary:
+- whether round numbers must be strictly unique and continuous (no gaps);
+- how duplicate rounds are avoided when more than one `Review` is created concurrently;
+- how a round is allocated when `Review` creation fails or is retried;
+- whether transactions, locks or other concurrency control are needed;
+- the field names, types and schema of the other `Review` fields that are not yet decided (everything other than `review_round`, whose name and integer type are decided above);
+- the concrete name of the `Review` identity field ("review_id" / "id"), which follows the Contract's existing identity-field convention — a field shown in an example is not thereby added;
+- the definition and ordering rules of `created_at`;
+- whether a "previous_review_id"-style linkage (R10-D) is ever added.
+
+Code-precedent caveat:
+The existing `EditPlanEngine.createEditPlan` max-version-plus-one allocation is a code precedent only. It is not proof of concurrency safety, and nothing in this decision claims that the concurrency question for Review rounds is solved.
 
 Rationale:
-[ ]
+1. Consistent with the decided A2 (one immutable Review record per review round) and with R7-C (an explicit round field or equivalent).
+2. "review_round" stores the business round directly, so it need not be derived from chronological ordering or a predecessor chain.
+3. It does not require introducing "previous_review_id" and that field's consistency rules.
+4. It does not add reliance on timestamps for determining the business round.
+5. If evidence later shows that chained auditing is needed, R10-D can be evaluated separately; this decision does not foreclose future evolution.
+
+These reasons describe why R10-A fits the present need. They do not make R10-C or R10-D permanently unavailable.
+
+Preserved alternatives:
+R10-A, R10-B, R10-C and R10-D all remain recorded in full above, unchanged. R10-B (Sequential Review Version Number), R10-C (Unique Review ID + Deterministic Chronological Ordering) and R10-D (Explicit Previous Review Linkage) stay as historical candidates and future reference.
 
 Dependencies / follow-up decisions:
-[ ]
+- Still OPEN and NOT decided by this entry: OD-R11, OD-R12, and OD-R1 through OD-R6. In particular OD-R2 (revision-counting unit; its candidate R2-D counts completed Review rounds), OD-R5, OD-R6 and OD-R11 are neither decided nor presumed by R10-A.
+- R7-C, R8-B (modified) and R9-A are unchanged by this entry; the two carried-forward constraints recorded in A3 remain in force, unchanged.
+- R10-A resolves only the round identity mechanism. The remaining Review schema and every item listed above stay for the Contract update / implementation-design stage. Slice 6 implementation remains NOT AUTHORIZED.
 
 ---
 
@@ -779,8 +836,8 @@ B1 (counting unit) + B2 (numeric cap or deferral) + B3 (enforcement point) + B4 
 |---|---|---|
 | OD-R7 | Review schema | R7-C (decided) |
 | OD-R8 | Reviewer identity | R8-B (modified) — Required Custom Reviewer Identity (decided) |
-| OD-R9 | Findings | [ ] |
-| OD-R10 | Review round identity | [ ] |
+| OD-R9 | Findings | R9-A — Embedded Structured Findings Array (decided) |
+| OD-R10 | Review round identity | R10-A — Explicit "review_round" Integer (decided) |
 | OD-R11 | EditVersion current marker | [ ] |
 | OD-R12 | Rough Cut approval-like field | [ ] |
 | OD-R2 | Revision counting unit | [ ] |
@@ -799,6 +856,8 @@ Every candidate option presented in this worksheet — including every option no
 ---
 
 ## Required Status
+
+*(Status as originally prepared — superseded by the STATUS UPDATE at the top of this file. The current state of record is in `37_ContentVideoOS_Slice6_Session_Handoff_Checkpoint.md` and `CVOS_Slice6_Implementation_Contract_v1.md` §17.)*
 
 **Decision Worksheet Status:** READY FOR HUMAN INPUT
 

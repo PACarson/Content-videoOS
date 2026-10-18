@@ -1,0 +1,28 @@
+--- a/35_ContentVideoOS_Slice6_Human_Decision_Worksheet.md (before field-name fix)
++++ b/35_ContentVideoOS_Slice6_Human_Decision_Worksheet.md (after field-name fix)
+@@ -319 +319 @@
+-- `review_round` counts the review rounds of one specific `EditVersion`: it is scoped to the `Review`'s exact `edit_version_id`.
++- The field is the integer `review_round`; it counts the review rounds of one specific `EditVersion` and is scoped to the `Review`'s exact `edit_version_id`.
+@@ -330 +330 @@
+-- final field naming, type validation and the concrete schema implementation;
++- the field names, types and schema of the other `Review` fields that are not yet decided (everything other than `review_round`, whose name and integer type are decided above);
+--- a/CVOS_Slice6_Implementation_Contract_v1.md (before field-name fix)
++++ b/CVOS_Slice6_Implementation_Contract_v1.md (after field-name fix)
+@@ -81 +81 @@
+-- exact field names beyond already-established canonical identifiers (`id`, `edit_version_id` as the linkage field, by analogy with `EditVersion.edit_plan_id`'s naming convention — this analogy is offered as a naming precedent, not as an approved field name)
++- exact field names beyond already-established canonical identifiers (`id`, `edit_version_id` as the linkage field, by analogy with `EditVersion.edit_plan_id`'s naming convention — this analogy is offered as a naming precedent, not as an approved field name), and beyond `review_round`, whose name is DECIDED by OD-R10 = R10-A (see the round identity block below)
+@@ -94 +94 @@
+-1. `review_round` is scoped to the exact `edit_version_id` of its `Review`: rounds are counted per `EditVersion`.
++1. The field is the integer `review_round`, scoped to the exact `edit_version_id` of its `Review`: rounds are counted per `EditVersion`.
+@@ -109 +109 @@
+-- the final field name, type validation and concrete schema implementation of the round field;
++- the field names, types and schema of the other `Review` fields that are not yet decided (everything other than `review_round`, whose name and integer type are decided above);
+@@ -121 +121 @@
+-// Illustrative only — no field name, type, or presence is approved.
++// Illustrative only — no field name, type, or presence is approved, except as explicitly marked DECIDED on a line below.
+@@ -125 +125 @@
+-  round               // DECIDED: explicit integer scoped to edit_version_id, starting at 1, assigned by ReviewEngine at creation, never caller-supplied (OD-R10 = R10-A); exact field name/type/validation and uniqueness/continuity/concurrency rules still TBD
++  review_round        // DECIDED (OD-R10 = R10-A): field name review_round and integer type are locked; scoped to edit_version_id, starting at 1, assigned by ReviewEngine at creation, never caller-supplied; uniqueness/continuity/allocation/concurrency rules still OPEN
+@@ -397 +397 @@
+-| OD-R10 | Review round identity representation (see §3) | **DECIDED — R10-A: Explicit "review_round" Integer** — each `Review` carries an explicit integer `review_round`, scoped to its exact `edit_version_id`, starting at 1 and assigned by `ReviewEngine` during `Review` creation (never supplied by the caller); distinct from `EditPlan.version`, `EditVersion` identity and EditPlan-lineage revision counting. R10-A resolves only the round identity mechanism; it does not complete the `Review` schema. Uniqueness, continuity, allocation (including failed creation/retry) and concurrency rules remain OPEN and must be defined in this Contract; the `createEditPlan` max-version-plus-one pattern is a code precedent only, not proof of concurrency safety. R10-B/C/D retained as historical candidates and future reference. Full boundary in §3; recorded in `35_ContentVideoOS_Slice6_Human_Decision_Worksheet.md`, section A4. | Partially — uniqueness/continuity/allocation/concurrency invariants and field naming still needed |
++| OD-R10 | Review round identity representation (see §3) | **DECIDED — R10-A: Explicit "review_round" Integer** — each `Review` carries an explicit integer `review_round`, scoped to its exact `edit_version_id`, starting at 1 and assigned by `ReviewEngine` during `Review` creation (never supplied by the caller); distinct from `EditPlan.version`, `EditVersion` identity and EditPlan-lineage revision counting. R10-A resolves only the round identity mechanism; it does not complete the `Review` schema. Uniqueness, continuity, allocation (including failed creation/retry) and concurrency rules remain OPEN and must be defined in this Contract; the `createEditPlan` max-version-plus-one pattern is a code precedent only, not proof of concurrency safety. R10-B/C/D retained as historical candidates and future reference. Full boundary in §3; recorded in `35_ContentVideoOS_Slice6_Human_Decision_Worksheet.md`, section A4. | Partially — uniqueness/continuity/allocation/concurrency invariants still needed; naming of the other `Review` fields still needed (the `review_round` name is decided) |
